@@ -32,3 +32,30 @@ export async function deleteLocalFiles(files:Array<string>){
         fs.unlinkSync(file);
     }
 }
+
+
+/**
+ * This function verifies that the given string is a valid URL.
+ *
+ * @param {String} url  String value representing a URL.
+ *
+ * @returns {String|undefined} URL.
+ *
+ */
+export function validateURL(url: string): string {
+    try {
+      url = new URL(url).toString();
+    } catch (e) {
+      console.error("ERROR::parseURL >> ", e);
+      url = undefined;
+    }
+    return url;
+}
+
+export function imageTypeSupported(imagePath: string): boolean {
+    return (
+      imagePath.endsWith(".png") ||
+      imagePath.endsWith(".jpg") ||
+      imagePath.endsWith(".jpeg")
+    );
+  }

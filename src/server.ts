@@ -1,6 +1,11 @@
 import express, { Response, Request } from 'express';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles } from './util/util';
+import { 
+  filterImageFromURL, 
+  deleteLocalFiles, 
+  validateURL,
+  imageTypeSupported
+ } from './util/util';
 
 (async () => {
 
@@ -15,17 +20,30 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 
   app.get('/filteredimage', async (req: Request, res: Response) => {
     try {
-      const { image_url } : { image_url : string } = req.query.params;
+      let { image_url } : { image_url : string } = req.query.params;
       if (!image_url) {
         return res.status(400).send('image_url not specified in query parameters');
       };
+
+      image_url = validateURL(image_url);
+
+      if (!image_url) {
+        return res.status(400).send({ message: "Image URL malformed" });
+      }
+
+      if (!imageTypeSupported(image_url.toLowerCase())) {
+        return res.status(422).send({ message: "Image type not supported" });
+      }
+
       const filteredpath : string = await filterImageFromURL(image_url);
       // deleteLocalFiles();
-      return res.sendFile(filteredpath);
+      return res.sendFile(filteredpath, {}, async (err : Error) => {
+        if (err) console.log(err);
+        await deleteLocalFiles([filteredpath]);
+      });
     } catch (e) {
       return res.status(422).send('An unexpected error occured! Kindly contact support!');
-    }
-    
+    } 
   })
   // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
