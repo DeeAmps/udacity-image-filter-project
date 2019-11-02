@@ -20,15 +20,15 @@ import {
 
   app.get('/filteredimage', async (req: Request, res: Response) => {
     try {
-      let { image_url } : { image_url : string } = req.query.params;
+      let { image_url } : { image_url : string } = req.query;
       if (!image_url) {
         return res.status(400).send('image_url not specified in query parameters');
       };
 
-      image_url = validateURL(image_url);
+      image_url = validateURL(image_url); //Validate the image URL
 
       if (!image_url) {
-        return res.status(400).send({ message: "Image URL malformed" });
+        return res.status(400).send({ message: "Endpoint URL malformed.." });
       }
 
       if (!imageTypeSupported(image_url.toLowerCase())) {
@@ -36,32 +36,16 @@ import {
       }
 
       const filteredpath : string = await filterImageFromURL(image_url);
-      // deleteLocalFiles();
+
       return res.sendFile(filteredpath, {}, async (err : Error) => {
         if (err) console.log(err);
         await deleteLocalFiles([filteredpath]);
       });
     } catch (e) {
+      console.log(e);
       return res.status(422).send('An unexpected error occured! Kindly contact support!');
     } 
-  })
-  // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
-  // GET /filteredimage?image_url={{URL}}
-  // endpoint to filter an image from a public url.
-  // IT SHOULD
-  //    1
-  //    1. validate the image_url query
-  //    2. call filterImageFromURL(image_url) to filter the image
-  //    3. send the resulting file in the response
-  //    4. deletes any files on the server on finish of the response
-  // QUERY PARAMATERS
-  //    image_url: URL of a publicly accessible image
-  // RETURNS
-  //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
-
-  /**************************************************************************** */
-
-  //! END @TODO1
+  });
   
   // Root Endpoint
   // Displays a simple message to the user
